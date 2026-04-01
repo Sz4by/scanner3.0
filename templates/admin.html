@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Admin - UPDH{% endblock %}
+{% block content %}
+<div class="admin-page">
+    <h1 class="page-title">
+        <i class="fas fa-shield-alt"></i> Admin Panel
+    </h1>
+
+    <!-- INVITE CODES -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2><i class="fas fa-ticket-alt"></i> Meghívó kódok</h2>
+            <form method="POST"
+                  action="{{ url_for('generate_invite') }}"
+                  class="inline-form">
+                <input type="number" name="count"
+                       value="1" min="1" max="50"
+                       class="input-sm">
+                <button type="submit"
+                        class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Generálás
+                </button>
+            </form>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Kód</th>
+                        <th>Állapot</th>
+                        <th>Létrehozva</th>
+                        <th>Felhasználta</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for code in codes %}
+                    <tr class="{% if not code.is_active %}row-disabled{% endif %}">
+                        <td>
+                            <code class="invite-code">
+                                {{ code.code }}
+                            </code>
+                        </td>
+                        <td>
+                            {% if code.used_by %}
+                                <span class="badge badge-used">
+                                    Felhasznált
+                                </span>
+                            {% elif code.is_active %}
+                                <span class="badge badge-active">
+                                    Aktív
+                                </span>
+                            {% else %}
+                                <span class="badge badge-disabled">
+                                    Letiltott
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ code.created_at }}</td>
+                        <td>{{ code.user_email or '-' }}</td>
+                        <td class="actions">
+                            <a href="#"
+                               class="btn btn-xs {% if code.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                               onclick="return openConfirmModal('Biztosan {% if code.is_active %}fagyasztod{% else %}feloldod{% endif %} ezt a meghívót? Az érintett felhasználó is kiléptetésre kerül.', '{{ url_for('toggle_invite', code_id=code.id) }}');">
+                                {% if code.is_active %}
+                                <i class="fas fa-eye-slash"></i>
+                                {% else %}
+                                <i class="fas fa-eye"></i>
+                                {% endif %}
+                            </a>
+                            <a href="#"
+                               class="btn btn-xs btn-danger"
+                               onclick="return openConfirmModal('Biztosan véglegesen törlöd ezt a meghívót? A felhasználó azonnal repül.', '{{ url_for('delete_invite', code_id=code.id) }}');">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2><i class="fas fa-users"></i> Felhasználók</h2>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Email cím</th>
+                        <th>Szerepkör</th>
+                        <th>Állapot</th>
+                        <th>Regisztráció</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr class="{% if not user.is_active %}row-disabled{% endif %}">
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                                <span class="badge badge-admin">
+                                    Admin
+                                </span>
+                            {% else %}
+                                <span class="badge badge-user">
+                                    Felhasználó
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge badge-active">
+                                    Aktív
+                                </span>
+                            {% else %}
+                                <span class="badge badge-disabled">
+                                    Letiltott
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at }}</td>
+                        <td class="actions">
+                            {% if user.id != session.get('user_id') %}
+                            <a href="#"
+                               class="btn btn-xs {% if user.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                               onclick="return openConfirmModal('Biztosan {% if user.is_active %}fagyasztod{% else %}feloldod{% endif %} a felhasználót? Azonnal kiléptetésre kerül.', '{{ url_for('toggle_user', user_id=user.id) }}');">
+                                {% if user.is_active %}
+                                <i class="fas fa-user-slash"></i>
+                                {% else %}
+                                <i class="fas fa-user-check"></i>
+                                {% endif %}
+                            </a>
+                            <a href="#"
+                               class="btn btn-xs btn-danger"
+                               onclick="return openConfirmModal('Biztosan véglegesen törlöd a felhasználót az adataival együtt?', '{{ url_for('delete_user', user_id=user.id) }}');">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            {% else %}
+                            <span class="text-muted">Te</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Admin Modal -->
+<div id="admin-modal" class="custom-modal-overlay" style="display:none;">
+    <div class="custom-modal">
+        <h3><i class="fas fa-exclamation-triangle" style="color:var(--yellow)"></i> Megerősítés</h3>
+        <p id="admin-modal-text">Biztosan folytatod?</p>
+        <div class="custom-modal-actions">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">Mégsem</button>
+            <a id="admin-modal-btn" href="#" class="btn btn-danger">Igen, biztosan</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function openConfirmModal(msg, url) {
+    document.getElementById('admin-modal-text').innerText = msg;
+    document.getElementById('admin-modal-btn').href = url;
+    document.getElementById('admin-modal').style.display = 'flex';
+    return false;
+}
+function closeConfirmModal() {
+    document.getElementById('admin-modal').style.display = 'none';
+}
+</script>
+{% endblock %}

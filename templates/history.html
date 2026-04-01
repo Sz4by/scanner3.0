@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}History - UPDH{% endblock %}
+{% block content %}
+<div class="history-page">
+    <h1 class="page-title">
+        <i class="fas fa-history"></i> Szkennelési Előzmények
+    </h1>
+
+    {% if jobs %}
+    <div class="history-grid">
+        {% for job in jobs %}
+        <div class="history-card"
+             onclick="window.open('/results/{{ job.id }}','_blank')">
+            <div class="history-header">
+                <span class="history-id">
+                    #{{ job.id[:8] }}...
+                </span>
+                <span class="status-badge status-{{ job.status }}">
+                    {{ job.status }}
+                </span>
+            </div>
+            <div class="history-stats">
+                <div class="hs">
+                    <i class="fas fa-check-circle"
+                       style="color:#22c55e"></i>
+                    {{ job.valid or 0 }}
+                </div>
+                <div class="hs">
+                    <i class="fas fa-inbox"
+                       style="color:#3b82f6"></i>
+                    {{ job.inbox or 0 }}
+                </div>
+                <div class="hs">
+                    <i class="fas fa-shield-alt"
+                       style="color:#f59e0b"></i>
+                    {{ job.twofa or 0 }}
+                </div>
+                <div class="hs">
+                    <i class="fas fa-times-circle"
+                       style="color:#ef4444"></i>
+                    {{ job.bad or 0 }}
+                </div>
+            </div>
+            <div class="history-meta">
+                <span>
+                    <i class="fas fa-list"></i>
+                    {{ job.total_accounts or 0 }} fiók
+                </span>
+                <span>
+                    <i class="fas fa-search"></i>
+                    {% if job.keywords is iterable and job.keywords is not string %}
+                        {{ job.keywords | join(', ') }}
+                    {% else %}
+                        {{ job.keywords }}
+                    {% endif %}
+                </span>
+            </div>
+            <div class="history-date">
+                <i class="fas fa-calendar"></i>
+                {{ job.created_at }}
+                <div style="margin-top: 5px;">
+                    {% if job.upload_url_valid %}
+                    <a href="{{ job.upload_url_valid }}"
+                       target="_blank"
+                       class="btn btn-xs btn-primary"
+                       onclick="event.stopPropagation()">
+                        <i class="fas fa-external-link-alt"></i> Érvényes
+                    </a>
+                    {% endif %}
+                    {% if job.upload_url_inbox %}
+                    <a href="{{ job.upload_url_inbox }}"
+                       target="_blank"
+                       class="btn btn-xs btn-primary"
+                       onclick="event.stopPropagation()">
+                        <i class="fas fa-external-link-alt"></i> Beérkező
+                    </a>
+                    {% endif %}
+                    {% if job.upload_url_2fa %}
+                    <a href="{{ job.upload_url_2fa }}"
+                       target="_blank"
+                       class="btn btn-xs btn-primary"
+                       onclick="event.stopPropagation()">
+                        <i class="fas fa-external-link-alt"></i> 2FA
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>Még nincsenek előzmények. Irány a Vezérlőpult egy új indításához!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
