@@ -781,19 +781,6 @@ textarea { resize:vertical; min-height:80px; }
     color:var(--text-secondary); font-size:0.8rem;
 }
 
-/* ═══ RESPONSIVE ═══ */
-@media (max-width:768px) {
-    .sidebar { width:60px; }
-    .sidebar span, .user-info span { display:none; }
-    main.with-sidebar { margin-left:60px; padding:15px; }
-    .control-grid { grid-template-columns:1fr; }
-    .stats-grid { grid-template-columns:repeat(2, 1fr); }
-    .detail-grid { grid-template-columns:1fr; }
-    .keyword-detail-row { grid-template-columns:1fr; }
-    .history-grid { grid-template-columns:1fr; }
-    .results-grid-layout { grid-template-columns:1fr; }
-}
-
 /* ═══ MULTI-COLUMN RESULTS ═══ */
 .results-grid-layout {
     display: grid;
@@ -828,3 +815,117 @@ textarea { resize:vertical; min-height:80px; }
 .result-col-header.header-valid { color: var(--blue); border-bottom-color: rgba(59,130,246,0.3); }
 .result-col-header.header-inbox { color: var(--green); border-bottom-color: rgba(34,197,94,0.3); }
 .result-col-header.header-2fa { color: var(--orange); border-bottom-color: rgba(245,158,11,0.3); }
+
+/* ═══ RESPONSIVE / MOBIL OPTIMALIZÁLÁS ═══ */
+@media (max-width: 768px) {
+    /* 1. Sidebar átalakítása alsó menüsorrá (Bottom Navigation) */
+    .sidebar { 
+        width: 100%; 
+        height: 65px; 
+        top: auto; 
+        bottom: 0; 
+        flex-direction: row; 
+        padding: 0;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        z-index: 9999;
+        background: rgba(7, 7, 16, 0.95);
+        backdrop-filter: blur(10px);
+    }
+    .sidebar-header { display: none; } /* Logó elrejtése helytakarékosság miatt */
+    
+    .nav-links { 
+        flex-direction: row; 
+        padding: 0; 
+        flex: 1;
+        justify-content: space-around;
+        align-items: center;
+    }
+    
+    .sidebar-footer { 
+        border-top: none; 
+        padding: 0; 
+        display: flex;
+        flex: 0.3;
+    }
+    .user-info { display: none; } /* Email cím elrejtése */
+    
+    .nav-link, .logout-link {
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 0;
+        flex: 1;
+        font-size: 0.65rem;
+        justify-content: center;
+        border-radius: 0;
+        text-align: center;
+    }
+    .nav-link i, .logout-link i { font-size: 1.2rem; margin: 0 auto; }
+    .nav-link span, .logout-link span { display: block; }
+    
+    .logout-link { margin-top: 0; }
+
+    /* 2. Fő tartalom igazítása (hogy az alsó menü ne takarja ki az alját) */
+    main.with-sidebar { 
+        margin-left: 0; 
+        margin-bottom: 65px; 
+        padding: 15px; 
+    }
+
+    /* 3. Vezérlőpult - gombok és formok 1 oszloposak legyenek */
+    .control-grid { grid-template-columns: 1fr; }
+    .control-buttons { 
+        flex-direction: column; 
+        width: 100%; 
+    }
+    .btn { 
+        width: 100%; 
+        justify-content: center; 
+        padding: 14px; /* Nagyobb kattintási felület telefonon */
+        font-size: 1rem;
+    }
+
+    /* 4. Statisztika kártyák (2 oszlopos rács mobilon is, de kisebb paddinggal) */
+    .stats-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 10px; 
+    }
+    .stat-card { 
+        padding: 12px; 
+        flex-direction: column; 
+        text-align: center; 
+        gap: 5px; 
+    }
+    .stat-value { font-size: 1.2rem; }
+
+    /* 5. Eredmények oszlopai - egymás alá kerülnek */
+    .results-grid-layout { grid-template-columns: 1fr; gap: 15px; }
+    .result-col-container { max-height: 400px; } /* Kicsit rövidebb, hogy át lehessen görgetni a következőre */
+
+    /* 6. Admin táblázatok és Modalok */
+    .detail-grid { grid-template-columns: 1fr; }
+    .keyword-detail-row { 
+        grid-template-columns: 1fr; 
+        gap: 5px; 
+        padding: 15px 10px;
+    }
+    .data-table th, .data-table td { 
+        padding: 10px 8px; 
+        font-size: 0.8rem; 
+    }
+    .actions { flex-direction: column; }
+    
+    /* 7. Auth (Login/Register) képernyő */
+    .auth-card {
+        padding: 25px 20px;
+        margin: 15px;
+    }
+    .szaby-copyright {
+        bottom: 80px !important; /* Hogy az alsó menü ne takarja el */
+    }
+}
+
+/* Extra kicsi képernyők (pl. régebbi iPhone-ok) */
+@media (max-width: 400px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
