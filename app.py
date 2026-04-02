@@ -42,8 +42,12 @@ socketio = SocketIO(
     app, cors_allowed_origins="*", async_mode='threading'
 )
 
-os.makedirs('uploads', exist_ok=True)
-os.makedirs('static', exist_ok=True)
+# VERCEL FIX: try-except blokk, mert a Vercel írásvédett!
+try:
+    os.makedirs('uploads', exist_ok=True)
+    os.makedirs('static', exist_ok=True)
+except OSError:
+    pass
 
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@admin.com')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
@@ -83,8 +87,8 @@ try:
 except Exception as e:
     print(f"[ERROR] MongoDB connection failed: {e}")
     print(f"[INFO] URI: {MONGO_URI[:30]}...")
-    print("[INFO] Check your .env file!")
-    exit(1)
+    print("[INFO] Check your .env file or MongoDB Network Access!")
+    # VERCEL FIX: Kivettük az exit(1)-et, hogy ne crasheljen azonnal!
 
 db = mongo_client[DB_NAME]
 
@@ -102,20 +106,23 @@ results_col.create_index('job_id')
 #  ADMIN INIT
 # ══════════════════════════════════════════
 
-existing_admin = users_col.find_one({'email': ADMIN_EMAIL})
-if not existing_admin:
-    users_col.insert_one({
-        'email': ADMIN_EMAIL,
-        'password_hash': generate_password_hash(
-            ADMIN_PASSWORD
-        ),
-        'is_admin': True,
-        'is_active': True,
-        'created_at': datetime.utcnow()
-    })
-    print(f"[OK] Admin created: {ADMIN_EMAIL}")
-else:
-    print(f"[OK] Admin exists: {ADMIN_EMAIL}")
+try:
+    existing_admin = users_col.find_one({'email': ADMIN_EMAIL})
+    if not existing_admin:
+        users_col.insert_one({
+            'email': ADMIN_EMAIL,
+            'password_hash': generate_password_hash(
+                ADMIN_PASSWORD
+            ),
+            'is_admin': True,
+            'is_active': True,
+            'created_at': datetime.utcnow()
+        })
+        print(f"[OK] Admin created: {ADMIN_EMAIL}")
+    else:
+        print(f"[OK] Admin exists: {ADMIN_EMAIL}")
+except Exception as e:
+    print(f"[WARNING] Admin init failed (No DB connection?): {e}")
 
 
 # ══════════════════════════════════════════
